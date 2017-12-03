@@ -20,16 +20,24 @@ int main(){
       letter = line[index];
       if( letter == ' '){
 	word = line.substr(wordStart, (index - wordStart));
-	tokenList.push_back(word);
+	if( word != "")
+	  tokenList.push_back(word);
 	wordStart = index + 1;
-
       }
       index++;
     }
+    word = line.substr(wordStart, (index -wordStart));
+    if(word != "")
+      tokenList.push_back(word);
     std::getline(input, line);
     length = line.length();
     index = wordStart = 0;
   }
   input.close();
-return 0;
+  for(std::list<std::string>::iterator it = tokenList.begin(); it != tokenList.end(); ++it){
+    std::cout << " " << *it;
+  }
+  std::cout << '\n';
+
+  return 0;
 }
