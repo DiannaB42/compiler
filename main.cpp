@@ -13,11 +13,11 @@ int main(){
   return 0;
 }
 
-
+//printList prints the tokenList to the output sent to it
 std::ostream& printList (std::ostream& output, std::list<std::string> tokenList){
    for (std::list<std::string>::iterator it = tokenList.begin(); it != tokenList.end(); ++it){
     output << *it <<std::endl;
   }
-  output << "\n\n";
+  output << "\n";
   return output;
 }

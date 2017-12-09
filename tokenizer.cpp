@@ -4,7 +4,8 @@
 
 //tokenizer reads a file called file1.txt and adds all words to a list.
 //A word is defined as being separated from other characters by either a
-//space or a new line. 
+//space or a new line. Special charcters such as ; ( ) + - = * also seperate
+//words
 std::list<std::string> tokenize(){
   std::list <std::string> tokenList;  
   std::fstream input;
@@ -20,7 +21,7 @@ std::list<std::string> tokenize(){
       letter = line[index];
       if( letter == ' '){
 	word = line.substr(wordStart, (index - wordStart));
-	if( word != "")
+	if( word != "" )
 	  tokenList.push_back(word);
 	wordStart = index + 1;
       }
@@ -34,7 +35,17 @@ std::list<std::string> tokenize(){
 	  tokenList.push_back(word);
 	  index++;
 	}
-          wordStart = index;
+	if(length > index){
+	  if(line[index] == ' '){
+            wordStart = index + 1;
+	  }
+	  else {
+	    wordStart = index;
+	  }
+	}
+	else{
+	  wordStart = index;
+	}
       }
       index++;
     }
