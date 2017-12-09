@@ -5,11 +5,19 @@
 #include "tokenizer.h"
 using namespace std;
 
+std::ostream& printList (std::ostream&, std::list<std::string>);
+
 int main(){
   std::list<std::string> tokenList = tokenize();
+  printList(std::cout, tokenList);
+  return 0;
+}
+
+
+std::ostream& printList (std::ostream& output, std::list<std::string> tokenList){
    for (std::list<std::string>::iterator it = tokenList.begin(); it != tokenList.end(); ++it){
-    std::cout << std::endl << *it;
+    output << *it <<std::endl;
   }
-  std::list <std::string>::iterator it =tokenList.begin();
-return 0;
+  output << "\n\n";
+  return output;
 }
