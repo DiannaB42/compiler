@@ -25,8 +25,9 @@ std::list<std::string> tokenize(){
 	  tokenList.push_back(word);
 	wordStart = index + 1;
       }
-      else if( letter ==';'|| letter == '=' ||letter == '+'||letter =='-'|| letter == '*' || letter == '(' || letter == ')'){
-        word = line.substr(wordStart, (index - wordStart));
+      else{
+        while( letter ==';'|| letter == '=' ||letter == '+'||letter =='-'|| letter == '*' || letter == '(' || letter == ')'){
+	word = line.substr(wordStart, (index - wordStart));
         if ( word != ""){
           tokenList.push_back(word);
         }
@@ -46,6 +47,8 @@ std::list<std::string> tokenize(){
 	else{
 	  wordStart = index;
 	}
+	letter = line[index];
+      }
       }
       index++;
     }
