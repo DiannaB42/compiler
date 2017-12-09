@@ -1,17 +1,17 @@
 #include <iostream>
 #include <fstream>
-#include <string>
-#include <list>
+#include "tokenizer.h"
 
-
-
-int main(){
+//tokenizer reads a file called file1.txt and adds all words to a list.
+//A word is defined as being separated from other characters by either a
+//space or a new line. 
+std::list<std::string> tokenize(){
+  std::list <std::string> tokenList;  
   std::fstream input;
   input.open("file1.txt");
   size_t length, index = 0, wordStart = 0;
   char letter;
   std::string word;
-  std::list<std::string> tokenList;
   std::string line;
   std::getline(input, line);
   length = line.length();
@@ -27,17 +27,14 @@ int main(){
       index++;
     }
     word = line.substr(wordStart, (index -wordStart));
-    if(word != "")
+    if(word != ""){
       tokenList.push_back(word);
+    }
     std::getline(input, line);
     length = line.length();
     index = wordStart = 0;
   }
   input.close();
-  for(std::list<std::string>::iterator it = tokenList.begin(); it != tokenList.end(); ++it){
-    std::cout << " " << *it;
-  }
-  std::cout << '\n';
-
-  return 0;
+  return tokenList;
 }
+
