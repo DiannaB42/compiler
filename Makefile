@@ -6,3 +6,5 @@ tokenizer.o: tokenizer.h tokenizer.cpp
 	g++ -c tokenizer.cpp -o tokenizer.o
 parser.o: parser.h parser.cpp
 	g++ -c parser.cpp -o parser.o
+clean:
+	rm -f *.o

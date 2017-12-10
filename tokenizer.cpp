@@ -9,7 +9,7 @@
 std::list<std::string> tokenize(){
   std::list <std::string> tokenList;  
   std::fstream input;
-  input.open("file1.txt");
+  input.open("file.txt");
   size_t length, index = 0, wordStart = 0;
   char letter;
   std::string word;

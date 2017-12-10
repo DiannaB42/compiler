@@ -22,7 +22,7 @@ int main(){
 //  std::cout << "abd0 returned " << identifier("abd0") << "\n\n"; 
 //  std::cout <<"0a classified as identfier " <<identifier("0a") << "\n"; 
 //  std::cout <<"0a classified as literal " <<literal("0a") << "\n"; 
-//  std::cout << term(tokenList.begin(), tokenList) << "\n";
+  std::cout << term(tokenList.begin(), tokenList) << "\n";
   return 0;
 }
 

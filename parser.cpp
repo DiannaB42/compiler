@@ -177,14 +177,14 @@ bool identifier(std::string id){
 }
 
 //factor checks that the string is a correct factor expression
-bool factor(std::list<std::string>::iterator& fact, std::list<std::string> list){
+bool factor(std::list<std::string>::iterator& fact, std::list<std::string>& list){
   std::string temp, lex;
-  std::cout << "checking factor " << *fact << "\n";
   if(fact == list.end()){
     std::cout << "Error: Sent empty list to factor\n";
     return false;
   }
   lex = *fact;
+  std::cout << "checking factor " << *fact << "\n";
   switch (lex[0]){
     case '-':
     case '+':
@@ -212,16 +212,25 @@ bool factor(std::list<std::string>::iterator& fact, std::list<std::string> list)
       return false;
       break;
     default:
+      std::cout << "Entering default case with "<< *fact << " \n\n";
       temp = *fact;
       if(digit(temp[0])== true){
 	if(literal(temp) == true){
+	  if(++fact != list.end()){
+	    std::cout << "Returning from factor fine \n\n";
+	    return true;
+	  }
 	  return true;
 	}
       }
       else if (letter(temp[0]) == true){
-        if( identifier(*fact) == true){
-	  return true;
-	}
+        if( identifier(temp) == true){
+	    if(++fact != list.end()){
+	      std::cout << "Returning from factor fine \n\n";
+	      return true;
+	    }
+	    return true;
+	  }
       }
       std::cout << "Error: Factor " << *fact << " not a literal or identifier\n"; 
       return false;
@@ -230,39 +239,47 @@ bool factor(std::list<std::string>::iterator& fact, std::list<std::string> list)
 }
 
 
-bool term(std::list<std::string>::iterator trm, std::list<std::string> list){
+bool isEnd(std::list<std::string>::iterator it, std::list<std::string>& list){
+  it++;
+  if(it == list.end())
+    return true;
+  else
+    return false;
+}
+
+bool term(std::list<std::string>::iterator trm, std::list<std::string>& list){
   std::string currentTerm;
   std::cout << "checking term " << *trm << "\n";
   if(factor(trm, list) == false){
     return false;
   }
+  std::cout << "Made it back fine \n\n";
+  if(trm == list.end()){
+    return true;
+  }
   else{
-    if(trm == list.end()){
-      return true;
+    currentTerm = *trm;
+    if( currentTerm == ""){
+      std::cout << "Error: Empty string sent to term\n";
+      return false;
     }
-    else{
-      currentTerm = *trm;
-      if( currentTerm == ""){
-        std::cout << "Error: Empty string sent to term\n";
+    switch(currentTerm[0]){
+      case '*':
+        std::cout << "Removing * and attempting to test next\n";
+        return term(++trm, list);
+        break;
+      default:
+        if(factor(trm,list) == true){
+          return true;
+         }
+        std::cout << "Error: Unknown term " << currentTerm << " encountered\n";
         return false;
-      }
-      switch(currentTerm[0]){
-	case '*':
-	  return term(++trm, list);
-          break;
-	default:
-	  if(factor(trm,list) == true){
-	    return true;
-	  }
-	  std::cout << "Error: Unknown term " << currentTerm << " encountered\n";
-	  return false;
-      }
     }
   }
 }
 
 
-bool exp(std::list<std::string>::iterator expr, std::list<std::string> list){
+bool exp(std::list<std::string>::iterator expr, std::list<std::string>& list){
   std::string currentExp;
   bool recur;
   if(term(expr, list) == false){
