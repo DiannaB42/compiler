@@ -6,15 +6,11 @@
 #include <list>
 
 
-bool isEnd(std::list<std::string>::iterator, std::list<std::string>&);
-bool digit(char);
-bool nonZeroDigit(char);
-bool literal(std::string);
-bool letter(char);
-bool identifier(std::string);
-bool factor(std::list<std::string>::iterator&, std::list<std::string>&);
-bool term(std::list<std::string>::iterator, std::list<std::string>&);
-bool exp(std::list<std::string>::iterator, std::list<std::string>&);
+bool isEnd 	(std::list<Token>::iterator,  std::list<Token>&);
+bool factor	(std::list<Token>::iterator&, std::list<Token>&);
+bool term  	(std::list<Token>::iterator&, std::list<Token>&);
+bool exp   	(std::list<Token>::iterator&, std::list<Token>&);
+bool assignment	(std::list<Token>::iterator&, std::list<Token>&);
 
 
 #endif
