@@ -61,6 +61,7 @@ std::list<std::string> tokenize(){
     index = wordStart = 0;
   }
   input.close();
+  tokenList.push_back("%");
   return tokenList;
 }
 

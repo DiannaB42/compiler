@@ -190,6 +190,10 @@ bool factor(std::list<std::string>::iterator& fact, std::list<std::string>& list
       std::cout << "Returning with ) from factor\n";
       return true;
       break;
+    case ';':
+      std::cout << "Returning with ; from factor\n";
+      return true;
+      break;
     case '-':
     case '+':
       if(lex.length() != 1){
@@ -202,7 +206,12 @@ bool factor(std::list<std::string>::iterator& fact, std::list<std::string>& list
       break;
     case '(':
       std::cout << "Removing (\n";
-      if(exp(++fact,list) == true){
+      ++fact;
+      if( *fact == ")"){
+	std::cout << "Error: No value inside ()\n";
+        return false;
+      }
+      if(exp(fact,list) == true){
         temp =*( fact);
         if( temp[0] == ')'){
 	  if(temp.length() == 1){
@@ -307,6 +316,10 @@ bool exp(std::list<std::string>::iterator& expr, std::list<std::string>& list){
           std::cout << "Returning ) from expression\n";
           return true;
           break;
+        case ';':
+          std::cout << "Returning ; from expression\n";
+          return true;
+          break;
         case '+':
         case '-':
           recur = exp(++expr,list);
@@ -320,60 +333,95 @@ bool exp(std::list<std::string>::iterator& expr, std::list<std::string>& list){
   }
 }
 
-bool assignment(std::list<std::string>::iterator& it, std::list<std::string>& list){
-  if( it == list.end()){
+bool assignment(std::list<std::string>::iterator& it, std::list<std::string>& list, std::unordered_map<std::string, int>& symbols){
+  if(*it == "%"){
     std::cout << "Error: Sent an empty assignment statement\n";
     return false;
   }
   std::string current = *it;
-  if( identifier(current) == true){
-    it++;
-    if(it == list.end()){
-      std::cout << "Error: no assignment after identifier " << current << "\n";
-      return false;
-    }
-    current = *it;
-    if(current[0] != '='){
-      std::cout << "Error: No = after identifier\n";
-      return false;
-    }
-    if(current.length() != 1){
-      std::cout << "Error: extra character after = in " << current <<"\n";
-      return false;
-    }
-    it++;
-    if(it == list.end()){
-      std::cout << "Error: no expression after = \n";
-      return false;
-    }
-    if(exp(it, list) == false){
-      std::cout << "Error: Invalid expression in assignment statement\n";
-      return false;
-    }
-    it++;
-    if(it == list.end()){
-      std::cout << "Error: Reached end of file before getting ; \n";
-      return false;
-    }
-    current = *it;
-    if( current[0]!= ';'){
-      std::cout << "Error: Expected ; but received " << current << "\n";
-      return false;
-    }
-    if(current.length() != 1){
-      std::cout << "Error: Unknown character after ; in " << current << "\n";
-      return false;
-    }
+  std::string id;
+  int value = 0;
+  if( identifier(current) != true){
+    return false;
   }
+  id = *it;
+  it++;
+  if(*it == "%"){
+    std::cout << "Error: no assignment after identifier " << current << "\n";
+    return false;
+  }
+  if(*it == ";"){
+    std::cout << "Error: no assignment before ;\n";
+    return false;
+  }
+  current = *it;
+  if(current[0] != '='){
+    std::cout << "Error: No = after identifier\n";
+    return false;
+  }
+  if(current.length() != 1){
+    std::cout << "Error: extra character after = in " << current <<"\n";
+    return false;
+  }
+  it++;
+  if(*it == "%"){
+    std::cout << "Error: no expression after = \n";
+    return false;
+  }
+  if(exp(it, list) == false){
+    std::cout << "Error: Invalid expression in assignment statement\n";
+    return false;
+  }
+  std::cout << "made it back to assignment\n";
+  if(it == list.end()){
+    std::cout << "Error: Reached end of file before getting ; \n";
+    return false;
+  }
+  current = *it;
+  if( current[0]!= ';'){
+    std::cout << "Error: Expected ; but received " << current << "\n";
+    return false;
+  }
+  if(current.length() != 1){
+    std::cout << "Error: Unknown character after ; in " << current << "\n";
+    return false;
+  }
+  if(insertSymbol(id, value, symbols) == false){
+    std::cout << "Unable to insert symbol " << id <<", " << value << " into symbol table\n";
+    return false;
+  }
+  return true;
 }
 
 bool program(std::list<std::string>::iterator& it, std::list<std::string> list){
-  while( it != list.end()){
-    if(assignment(it, list) == false){
+  std::unordered_map<std::string, int> symbols;
+  //std::list<std::string>::iterator end = list.end();
+  while(*it != "%" ){
+    if(assignment(it, list, symbols) == false){
       std::cout << "Invalid assignment\n";
       return false;
     }
-    ++it;
+    std::cout << "iterator points to " << *it << "\n";
+    it++;
   }
+  printSymbols(symbols);
   return true;
+}
+
+bool insertSymbol(std::string id, int value, std::unordered_map<std::string,int>& symbols){
+  bool insert;
+  if(symbols.find(id) == symbols.end()){
+    symbols.erase(id);
+    insert = symbols.insert({id, value}).second;
+  }
+  else{
+    insert = symbols.insert({id, value}).second;
+  }
+  return insert;
+}
+
+void printSymbols(std::unordered_map<std::string,int> symbols){
+  for (auto it= symbols.begin(); it != symbols.end(); ++it){
+    std::cout << it->first << " = " << it->second << "\n";
+  }
 }

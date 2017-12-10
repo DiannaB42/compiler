@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <list>
+#include <unordered_map>
 
 
 bool isEnd(std::list<std::string>::iterator, std::list<std::string>&);
@@ -15,7 +16,10 @@ bool identifier(std::string);
 bool factor(std::list<std::string>::iterator&, std::list<std::string>&);
 bool term(std::list<std::string>::iterator&, std::list<std::string>&);
 bool exp(std::list<std::string>::iterator&, std::list<std::string>&);
-bool program(std::list<std::string>::iterator&, std::list<std::string>&);
+bool assignment(std::list<std::string>::iterator&, std::list<std::string>&, std::unordered_map<std::string, int>&);
+bool program(std::list<std::string>::iterator&, std::list<std::string>);
+bool insertSymbol(std::string, int, std::unordered_map<std::string, int>&);
+void printSymbols(std::unordered_map<std::string, int>);
 
 
 #endif
