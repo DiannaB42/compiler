@@ -200,7 +200,12 @@ bool factor(std::list<std::string>::iterator& fact, std::list<std::string>& list
         std::cout << "Error: Unknown value encountered after " << lex << " in factor "<< *fact;
         return false;
       }
-      if(factor(++fact, list) == true){
+      ++fact;
+      if(*fact == ")"){
+        std::cout << "No value after +/- before hitting )\n";
+        return false;
+      }
+      if(factor(fact, list) == true){
         return true;
       }
       break;
@@ -286,14 +291,15 @@ bool term(std::list<std::string>::iterator& trm, std::list<std::string>& list){
         break;
       case '*':
         std::cout << "Removing * and attempting to test next\n";
-        return term(++trm, list);
+        ++trm;
+        if(*trm == ")"){
+          std::cout << "Error: No value after * before hitting )\n";
+	  return false;
+        }
+        return term(trm, list);
         break;
       default:
-        if(factor(trm,list) == true){
-          return true;
-         }
-        std::cout << "Error: Unknown term " << currentTerm << " encountered\n";
-        return false;
+        return true;
     }
   }
 }
@@ -322,7 +328,12 @@ bool exp(std::list<std::string>::iterator& expr, std::list<std::string>& list){
           break;
         case '+':
         case '-':
-          recur = exp(++expr,list);
+          ++expr;
+          if(*expr == ")"){
+            std::cout << "Error: no value after +/- before hitting )\n";
+            return false;
+          }
+          recur = exp(expr,list);
 	  return recur;
           break;
         default:
