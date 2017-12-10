@@ -186,6 +186,10 @@ bool factor(std::list<std::string>::iterator& fact, std::list<std::string>& list
   lex = *fact;
   std::cout << "checking factor " << *fact << "\n";
   switch (lex[0]){
+    case ')':
+      std::cout << "Returning with ) from factor\n";
+      return true;
+      break;
     case '-':
     case '+':
       if(lex.length() != 1){
@@ -197,10 +201,13 @@ bool factor(std::list<std::string>::iterator& fact, std::list<std::string>& list
       }
       break;
     case '(':
+      std::cout << "Removing (\n";
       if(exp(++fact,list) == true){
-        temp =*( ++fact);
+        temp =*( fact);
         if( temp[0] == ')'){
 	  if(temp.length() == 1){
+            std::cout << "Removing )\n";
+	    ++fact;
 	    return true;
 	  }
 	  std::cout << "Error: Unknown value after ( in " << temp<< "\n";
@@ -247,7 +254,7 @@ bool isEnd(std::list<std::string>::iterator it, std::list<std::string>& list){
     return false;
 }
 
-bool term(std::list<std::string>::iterator trm, std::list<std::string>& list){
+bool term(std::list<std::string>::iterator& trm, std::list<std::string>& list){
   std::string currentTerm;
   std::cout << "checking term " << *trm << "\n";
   if(factor(trm, list) == false){
@@ -264,6 +271,10 @@ bool term(std::list<std::string>::iterator trm, std::list<std::string>& list){
       return false;
     }
     switch(currentTerm[0]){
+      case ')':
+        std::cout << "Returning ) from term\n";
+        return true;
+        break;
       case '*':
         std::cout << "Removing * and attempting to test next\n";
         return term(++trm, list);
@@ -279,19 +290,23 @@ bool term(std::list<std::string>::iterator trm, std::list<std::string>& list){
 }
 
 
-bool exp(std::list<std::string>::iterator expr, std::list<std::string>& list){
+bool exp(std::list<std::string>::iterator& expr, std::list<std::string>& list){
   std::string currentExp;
   bool recur;
   if(term(expr, list) == false){
     return false;
   }
   else{
-    if(++expr == list.end()){
+    if(expr == list.end()){
       return true;
     }
     else{
       currentExp = *expr;
       switch(currentExp[0]){
+        case ')':
+          std::cout << "Returning ) from expression\n";
+          return true;
+          break;
         case '+':
         case '-':
           recur = exp(++expr,list);
@@ -303,4 +318,62 @@ bool exp(std::list<std::string>::iterator expr, std::list<std::string>& list){
       }
     }
   }
+}
+
+bool assignment(std::list<std::string>::iterator& it, std::list<std::string>& list){
+  if( it == list.end()){
+    std::cout << "Error: Sent an empty assignment statement\n";
+    return false;
+  }
+  std::string current = *it;
+  if( identifier(current) == true){
+    it++;
+    if(it == list.end()){
+      std::cout << "Error: no assignment after identifier " << current << "\n";
+      return false;
+    }
+    current = *it;
+    if(current[0] != '='){
+      std::cout << "Error: No = after identifier\n";
+      return false;
+    }
+    if(current.length() != 1){
+      std::cout << "Error: extra character after = in " << current <<"\n";
+      return false;
+    }
+    it++;
+    if(it == list.end()){
+      std::cout << "Error: no expression after = \n";
+      return false;
+    }
+    if(exp(it, list) == false){
+      std::cout << "Error: Invalid expression in assignment statement\n";
+      return false;
+    }
+    it++;
+    if(it == list.end()){
+      std::cout << "Error: Reached end of file before getting ; \n";
+      return false;
+    }
+    current = *it;
+    if( current[0]!= ';'){
+      std::cout << "Error: Expected ; but received " << current << "\n";
+      return false;
+    }
+    if(current.length() != 1){
+      std::cout << "Error: Unknown character after ; in " << current << "\n";
+      return false;
+    }
+  }
+}
+
+bool program(std::list<std::string>::iterator& it, std::list<std::string> list){
+  while( it != list.end()){
+    if(assignment(it, list) == false){
+      std::cout << "Invalid assignment\n";
+      return false;
+    }
+    ++it;
+  }
+  return true;
 }
