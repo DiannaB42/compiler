@@ -2,7 +2,7 @@
 #include <fstream>
 #include "tokenizer.h"
 
-//tokenizer reads a file called file1.txt and adds all words to a list.
+//tokenizer reads a file specified by it parameters and adds all words to a list
 //A word is defined as being separated from other characters by either a
 //space or a new line. Special charcters such as ; ( ) + - = * also seperate
 //words

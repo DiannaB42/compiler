@@ -1,15 +1,19 @@
 #include "parser.h"
 #include <iostream>
 
+
+//constructor for Tree object
 Tree::Tree()
 {
   root=NULL;
 }
 
+//destructor for Tree object
 Tree::~Tree(){
   destroy_tree();
 }
 
+//helper function for deleting Tree object
 void Tree::destroy_tree(node *leaf)
 {
   if(leaf!=NULL)
@@ -20,6 +24,8 @@ void Tree::destroy_tree(node *leaf)
   }
 }
 
+//Creates a root node or inserts a node to the side of parent specified 
+//by side. 2 for left and 1 for right
 void Tree::insert(int key, node* parent, int side)
 {
   node* child;
@@ -43,25 +49,38 @@ void Tree::insert(int key, node* parent, int side)
   }
 }
 
+
+//helper function to delete Tree
 void Tree::destroy_tree()
 {
   destroy_tree(root);
 }
 
+//Parser constructor
 Parser::Parser(std::list<std::string> tokenList){
   list=tokenList;
   evaluation = NULL;
 }
 
+//Parser destructor
 Parser::~Parser(){
   if( evaluation != NULL)
     delete evaluation;
 }
 
+//Calculates value held in tree. Calls a helper function to do inorder
+//traversal of tree
 int Tree::calculate(){
   return calculate(root);
 }
 
+//Inorder traveral which calculates values. If node has no left or right
+//it is a leaf and contains a value. If no right node, could be from factor
+//term or expression. Factor has values 1 or -1 for if it + or -. Term
+//denoted by value 2, and expression by 3 or -3 but only meaningful when there
+//is another node on the right. If node on either side then need to perform
+//evaluations for term and expression. Term gets left * right. Expression
+//is + for value 3 and - for value -3 
 int Tree::calculate(node* leaf){
   if( leaf == NULL)
     return 0;
@@ -374,7 +393,7 @@ bool Parser::factor(std::list<std::string>::iterator& fact, node* loc){
   return false;
 }
 
-
+//Tests whether the node after current node passed end of list
 bool Parser::isEnd(std::list<std::string>::iterator it){
   it++;
   if(it == list.end())
@@ -383,6 +402,9 @@ bool Parser::isEnd(std::list<std::string>::iterator it){
     return false;
 }
 
+//Creates a factor node to the left of current node. Then looks for *
+// which means term also gets a right side in the calculation and calls
+//itself on next value in list 
 bool Parser::term(std::list<std::string>::iterator& trm, node* loc){
   std::string currentTerm;
   node* temp = loc;
@@ -424,7 +446,9 @@ bool Parser::term(std::list<std::string>::iterator& trm, node* loc){
   }
 }
 
-
+//creates a term node to current node's left and then tests for + or
+//- following which indicate it needs to make right side. Sets value of
+//current node to 3 for + or -3 for -. Then calls self with node to right
 bool Parser::exp(std::list<std::string>::iterator& expr, node* loc){
   std::string currentExp;
   bool recur;
@@ -473,6 +497,11 @@ bool Parser::exp(std::list<std::string>::iterator& expr, node* loc){
   }
 }
 
+//assignment evaluates one line of the code separated by ;. It creates
+//a new evaluation tree and then checks that the first value in list
+//is a identifier. Then checks for = and then calls expression with a new
+//node at root. When that returns, it calculates the value of expression
+//and inserts it into the symbol table
 bool Parser::assignment(std::list<std::string>::iterator& it){
   node* loc = NULL;
   if( evaluation != NULL){
@@ -544,6 +573,9 @@ bool Parser::assignment(std::list<std::string>::iterator& it){
   return true;
 }
 
+
+//Program calls assignment repeatedly to check each line of code
+//Then prints the symbol table at the end
 bool Parser::program(){
   std::list<std::string>::iterator it = list.begin();
   while(*it != "%" ){
