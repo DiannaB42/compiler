@@ -6,10 +6,13 @@
 //A word is defined as being separated from other characters by either a
 //space or a new line. Special charcters such as ; ( ) + - = * also seperate
 //words
-std::list<std::string> tokenize(){
+std::list<std::string> tokenize( std::string file){
   std::list <std::string> tokenList;  
   std::fstream input;
-  input.open("file.txt");
+  if(file == ""){
+    std::cout << "No file given\n";
+  }
+  input.open(file);
   size_t length, index = 0, wordStart = 0;
   char letter;
   std::string word;

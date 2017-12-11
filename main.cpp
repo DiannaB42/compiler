@@ -11,8 +11,15 @@ using namespace std;
 
 std::ostream& printList (std::ostream&, std::list<std::string>);
 
-int main(){
-  std::list<std::string> tokenList = tokenize();
+int main(int argc, char *argv[]){
+  std::string filename = "";
+  if(argc > 1)
+    filename = argv[1];
+  else{
+    std::cout << "No file given\n";
+    exit(1);
+  }
+  std::list<std::string> tokenList = tokenize(filename);
   //printList(std::cout, tokenList);
   std::list<std::string>::iterator it = tokenList.begin();
   Parser* parser = new Parser(tokenList);

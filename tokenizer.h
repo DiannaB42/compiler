@@ -4,6 +4,6 @@
 #include <string>
 #include <list>
 
-std::list <std::string> tokenize();
+std::list <std::string> tokenize( std::string);
 
 #endif
