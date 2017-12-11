@@ -285,14 +285,14 @@ bool Parser::factor(std::list<std::string>::iterator& fact, node* loc){
     return false;
   }
   lex = *fact;
-  std::cout << "checking factor " << *fact << "\n";
+  //std::cout << "checking factor " << *fact << "\n";
   switch (lex[0]){
     case ')':
-      std::cout << "Returning with ) from factor\n";
+      //std::cout << "Returning with ) from factor\n";
       return true;
       break;
     case ';':
-      std::cout << "Returning with ; from factor\n";
+      //std::cout << "Returning with ; from factor\n";
       return true;
       break;
     case '-':
@@ -306,7 +306,7 @@ bool Parser::factor(std::list<std::string>::iterator& fact, node* loc){
       }
       ++fact;
       if(*fact == ")"){
-        std::cout << "No value after +/- before hitting )\n";
+        std::cout << "Error: No value after +/- before hitting )\n";
         return false;
       }
       evaluation->insert(1,loc,2);
@@ -316,7 +316,7 @@ bool Parser::factor(std::list<std::string>::iterator& fact, node* loc){
       }
       break;
     case '(':
-      std::cout << "Removing (\n";
+      //std::cout << "Removing (\n";
       evaluation->insert(3,loc, 2);
       loc = loc->left;
       ++fact;
@@ -328,7 +328,7 @@ bool Parser::factor(std::list<std::string>::iterator& fact, node* loc){
         temp =*( fact);
         if( temp[0] == ')'){
 	  if(temp.length() == 1){
-            std::cout << "Removing )\n";
+            //std::cout << "Removing )\n";
 	    ++fact;
 	    return true;
 	  }
@@ -341,13 +341,13 @@ bool Parser::factor(std::list<std::string>::iterator& fact, node* loc){
       return false;
       break;
     default:
-      std::cout << "Entering default case with "<< *fact << " \n\n";
+      //std::cout << "Entering default case with "<< *fact << " \n\n";
       temp = *fact;
       if(digit(temp[0])== true){
 	if(literal(temp) == true){
 	  if(++fact != list.end()){
             loc->key_value = stoi(temp);
-	    std::cout << "Returning from factor fine \n\n";
+	    //std::cout << "Returning from factor fine \n\n";
 	    return true;
 	  }
 	  return true;
@@ -362,7 +362,7 @@ bool Parser::factor(std::list<std::string>::iterator& fact, node* loc){
           auto search = symbols.find(temp);
           loc->key_value = search->second; 
           if(++fact != list.end()){
-            std::cout << "Returning from factor fine \n\n";
+            //std::cout << "Returning from factor fine \n\n";
             return true;
           }
           return true;
@@ -388,11 +388,11 @@ bool Parser::term(std::list<std::string>::iterator& trm, node* loc){
   node* temp = loc;
   evaluation->insert(1,loc,2);
   loc = loc->left;
-  std::cout << "checking term " << *trm << "\n";
+  //std::cout << "checking term " << *trm << "\n";
   if(factor(trm, loc) == false){
     return false;
   }
-  std::cout << "Made it back fine \n\n";
+  //std::cout << "Made it back fine \n\n";
   if(trm == list.end()){
     return true;
   }
@@ -404,11 +404,11 @@ bool Parser::term(std::list<std::string>::iterator& trm, node* loc){
     }
     switch(currentTerm[0]){
       case ')':
-        std::cout << "Returning ) from term\n";
+        //std::cout << "Returning ) from term\n";
         return true;
         break;
       case '*':
-        std::cout << "Removing * and attempting to test next\n";
+        //std::cout << "Removing * and attempting to test next\n";
         ++trm;
         if(*trm == ")"){
           std::cout << "Error: No value after * before hitting )\n";
@@ -443,11 +443,11 @@ bool Parser::exp(std::list<std::string>::iterator& expr, node* loc){
       currentExp = *expr;
       switch(currentExp[0]){
         case ')':
-          std::cout << "Returning ) from expression\n";
+          //std::cout << "Returning ) from expression\n";
           return true;
           break;
         case ';':
-          std::cout << "Returning ; from expression\n";
+          //std::cout << "Returning ; from expression\n";
           return true;
           break;
         case '+':
@@ -476,7 +476,6 @@ bool Parser::exp(std::list<std::string>::iterator& expr, node* loc){
 bool Parser::assignment(std::list<std::string>::iterator& it){
   node* loc = NULL;
   if( evaluation != NULL){
-  std::cout << "Got past making the root\n\n";
     delete evaluation;
     evaluation = NULL;
   }
@@ -523,7 +522,7 @@ bool Parser::assignment(std::list<std::string>::iterator& it){
     std::cout << "Error: Invalid expression in assignment statement\n";
     return false;
   }
-  std::cout << "made it back to assignment\n";
+  //std::cout << "made it back to assignment\n";
   if(it == list.end()){
     std::cout << "Error: Reached end of file before getting ; \n";
     return false;
@@ -539,7 +538,7 @@ bool Parser::assignment(std::list<std::string>::iterator& it){
   }
   value = evaluation->calculate();
   if(insertSymbol(id, value) == false){
-    std::cout << "Unable to insert symbol " << id <<", " << value << " into symbol table\n";
+    std::cout << "Error: Unable to insert symbol " << id <<", " << value << " into symbol table\n";
     return false;
   }
   return true;
@@ -549,14 +548,14 @@ bool Parser::program(){
   std::list<std::string>::iterator it = list.begin();
   while(*it != "%" ){
     if(assignment(it) == false){
-      std::cout << "Invalid assignment\n";
+      //std::cout << "Invalid assignment\n";
       return false;
     }
     if( evaluation != NULL){
       delete evaluation;
       evaluation = NULL;
     }
-    std::cout << "iterator points to " << *it << "\n";
+    //std::cout << "iterator points to " << *it << "\n";
     it++;
   }
   printSymbols();
