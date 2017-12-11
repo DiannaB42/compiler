@@ -1,4 +1,54 @@
 #include "parser.h"
+#include "tree.h"
+#include <iostream>
+#include "tree.h"
+
+Tree::Tree()
+{
+  root=NULL;
+}
+
+Tree::~Tree(){
+  destroy_tree();
+}
+
+void Tree::destroy_tree(node *leaf)
+{
+  if(leaf!=NULL)
+  {
+    destroy_tree(leaf->left);
+    destroy_tree(leaf->right);
+    delete leaf;
+  }
+}
+
+void Tree::insert(int key, node* parent, int side)
+{
+  node* child;
+  if(root!=NULL){
+    child = new node;
+    child->key_value = key;
+    child->left= NULL;
+    child->right = NULL;
+    if( side == 1){
+      parent->right = child;
+    }
+    else if( side ==2){
+      parent->left = child;
+    }
+  }
+  else {
+    root=new node;
+    root->key_value=key;
+    root->left=NULL;
+    root->right=NULL;
+  }
+}
+
+void Tree::destroy_tree()
+{
+  destroy_tree(root);
+}
 
 Parser::Parser(std::list<std::string> tokenList){
   list=tokenList;
@@ -358,7 +408,6 @@ bool Parser::exp(std::list<std::string>::iterator& expr, node* loc){
 }
 
 bool Parser::assignment(std::list<std::string>::iterator& it){
-  //btree expression;
   node* loc = NULL;
   if(*it == "%"){
     std::cout << "Error: Sent an empty assignment statement\n";
