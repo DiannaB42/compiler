@@ -5,8 +5,6 @@
 #include <string>
 #include <list>
 #include <unordered_map>
-#ifndef TREE_H
-#define TREE_H
 
 struct node
 {
@@ -20,20 +18,15 @@ class Tree
     public:
         Tree();
         ~Tree();
-
+        int calculate();
         void insert(int key, node* parent, int side);
-        //node *search(int key);
         void destroy_tree();
-
-    private:
-        void destroy_tree(node *leaf);
-        //void insert(int key, node *leaf);
-        //node *search(int key, node *leaf);
-        
         node *root;
+    private:
+        int calculate(node*);
+        void destroy_tree(node *leaf);
 };
 
-#endif
 
 class Parser{
 public:
@@ -55,7 +48,7 @@ void printSymbols();
 private:
 std::list<std::string> list;
 std::unordered_map<std::string, int> symbols;
-Tree evaluation;
+Tree* evaluation;
 };
 
 #endif

@@ -1,7 +1,5 @@
 #include "parser.h"
-#include "tree.h"
 #include <iostream>
-#include "tree.h"
 
 Tree::Tree()
 {
@@ -25,7 +23,7 @@ void Tree::destroy_tree(node *leaf)
 void Tree::insert(int key, node* parent, int side)
 {
   node* child;
-  if(root!=NULL){
+  if(parent != NULL){
     child = new node;
     child->key_value = key;
     child->left= NULL;
@@ -38,7 +36,7 @@ void Tree::insert(int key, node* parent, int side)
     }
   }
   else {
-    root=new node;
+    root= new node;
     root->key_value=key;
     root->left=NULL;
     root->right=NULL;
@@ -52,12 +50,55 @@ void Tree::destroy_tree()
 
 Parser::Parser(std::list<std::string> tokenList){
   list=tokenList;
+  evaluation = NULL;
 }
 
 Parser::~Parser(){
-
+  if( evaluation != NULL)
+    delete evaluation;
 }
 
+int Tree::calculate(){
+  return calculate(root);
+}
+
+int Tree::calculate(node* leaf){
+  if( leaf == NULL)
+    return 0;
+  else if (leaf->left == NULL && leaf->right == NULL){
+    return leaf->key_value;
+  }
+  else if(leaf->right == NULL){
+    switch(leaf->key_value){
+      case 1:
+        return calculate(leaf->left);
+        break;
+      case -1:
+        return -calculate(leaf->left);
+        break;
+      case 2:
+        return calculate(leaf->left);
+        break;
+      case 3:
+      case -3:
+        return calculate(leaf->left);
+        break;
+    }
+  }
+  else{
+    switch(leaf->key_value){
+      case 2:
+        return calculate(leaf->left)* calculate(leaf->right);
+        break;
+      case 3:
+        return calculate(leaf->left) + calculate(leaf->right);
+        break;
+      case -3:
+        return calculate(leaf->left) - calculate(leaf->right);
+        break;
+    }
+  }
+}
 
 //checks that the character is a digit
 bool Parser::digit(char num){
@@ -238,6 +279,7 @@ bool Parser::identifier(std::string id){
 //factor checks that the string is a correct factor expression
 bool Parser::factor(std::list<std::string>::iterator& fact, node* loc){
   std::string temp, lex;
+  //`node* parent = loc;
   if(fact == list.end()){
     std::cout << "Error: Sent empty list to factor\n";
     return false;
@@ -255,6 +297,9 @@ bool Parser::factor(std::list<std::string>::iterator& fact, node* loc){
       break;
     case '-':
     case '+':
+      if(lex[0] == '-'){
+        loc->key_value = -1;
+      }
       if(lex.length() != 1){
         std::cout << "Error: Unknown value encountered after " << lex << " in factor "<< *fact;
         return false;
@@ -264,12 +309,16 @@ bool Parser::factor(std::list<std::string>::iterator& fact, node* loc){
         std::cout << "No value after +/- before hitting )\n";
         return false;
       }
+      evaluation->insert(1,loc,2);
+      loc = loc->left;
       if(factor(fact, loc) == true){
         return true;
       }
       break;
     case '(':
       std::cout << "Removing (\n";
+      evaluation->insert(3,loc, 2);
+      loc = loc->left;
       ++fact;
       if( *fact == ")"){
 	std::cout << "Error: No value inside ()\n";
@@ -297,6 +346,7 @@ bool Parser::factor(std::list<std::string>::iterator& fact, node* loc){
       if(digit(temp[0])== true){
 	if(literal(temp) == true){
 	  if(++fact != list.end()){
+            loc->key_value = stoi(temp);
 	    std::cout << "Returning from factor fine \n\n";
 	    return true;
 	  }
@@ -308,13 +358,15 @@ bool Parser::factor(std::list<std::string>::iterator& fact, node* loc){
           if(symbols.find(temp) == symbols.end()){
             std::cout << "Error: Uninitialized variable " << temp << "\n";
             return false;
-          } 
-	    if(++fact != list.end()){
-	      std::cout << "Returning from factor fine \n\n";
-	      return true;
-	    }
-	    return true;
-	  }
+          }
+          auto search = symbols.find(temp);
+          loc->key_value = search->second; 
+          if(++fact != list.end()){
+            std::cout << "Returning from factor fine \n\n";
+            return true;
+          }
+          return true;
+	}
       }
       std::cout << "Error: Factor " << *fact << " not a literal or identifier\n"; 
       return false;
@@ -333,6 +385,9 @@ bool Parser::isEnd(std::list<std::string>::iterator it){
 
 bool Parser::term(std::list<std::string>::iterator& trm, node* loc){
   std::string currentTerm;
+  node* temp = loc;
+  evaluation->insert(1,loc,2);
+  loc = loc->left;
   std::cout << "checking term " << *trm << "\n";
   if(factor(trm, loc) == false){
     return false;
@@ -359,6 +414,8 @@ bool Parser::term(std::list<std::string>::iterator& trm, node* loc){
           std::cout << "Error: No value after * before hitting )\n";
 	  return false;
         }
+        evaluation->insert(1,temp,1);
+        loc = temp->right;
         return term(trm, loc);
         break;
       default:
@@ -371,6 +428,10 @@ bool Parser::term(std::list<std::string>::iterator& trm, node* loc){
 bool Parser::exp(std::list<std::string>::iterator& expr, node* loc){
   std::string currentExp;
   bool recur;
+  node* temp = loc;
+  //insert node with value 3 for term on left side
+  evaluation->insert(2, loc, 2);
+  loc = loc->left;
   if(term(expr, loc) == false){
     return false;
   }
@@ -391,12 +452,17 @@ bool Parser::exp(std::list<std::string>::iterator& expr, node* loc){
           break;
         case '+':
         case '-':
+          if(currentExp[0] == '-'){
+            temp->key_value = -3;
+          }
           ++expr;
           if(*expr == ")"){
             std::cout << "Error: no value after +/- before hitting )\n";
             return false;
           }
-          recur = exp(expr, loc);
+          evaluation->insert(2,temp, 1);
+          temp = temp->right;
+          recur = exp(expr, temp);
 	  return recur;
           break;
         default:
@@ -409,6 +475,16 @@ bool Parser::exp(std::list<std::string>::iterator& expr, node* loc){
 
 bool Parser::assignment(std::list<std::string>::iterator& it){
   node* loc = NULL;
+  if( evaluation != NULL){
+  std::cout << "Got past making the root\n\n";
+    delete evaluation;
+    evaluation = NULL;
+  }
+  evaluation = new Tree();
+  loc = evaluation->root;
+  //make root of tree
+  evaluation->insert(3,loc, 1);
+  loc = evaluation->root;
   if(*it == "%"){
     std::cout << "Error: Sent an empty assignment statement\n";
     return false;
@@ -461,6 +537,7 @@ bool Parser::assignment(std::list<std::string>::iterator& it){
     std::cout << "Error: Unknown character after ; in " << current << "\n";
     return false;
   }
+  value = evaluation->calculate();
   if(insertSymbol(id, value) == false){
     std::cout << "Unable to insert symbol " << id <<", " << value << " into symbol table\n";
     return false;
@@ -470,12 +547,14 @@ bool Parser::assignment(std::list<std::string>::iterator& it){
 
 bool Parser::program(){
   std::list<std::string>::iterator it = list.begin();
-  std::unordered_map<std::string, int> symbols;
-  //std::list<std::string>::iterator end = list.end();
   while(*it != "%" ){
     if(assignment(it) == false){
       std::cout << "Invalid assignment\n";
       return false;
+    }
+    if( evaluation != NULL){
+      delete evaluation;
+      evaluation = NULL;
     }
     std::cout << "iterator points to " << *it << "\n";
     it++;
