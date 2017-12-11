@@ -23,7 +23,8 @@ int main(){
 //  std::cout << "abd0 returned " << identifier("abd0") << "\n\n"; 
 //  std::cout <<"0a classified as identfier " <<identifier("0a") << "\n"; 
 //  std::cout <<"0a classified as literal " <<literal("0a") << "\n"; 
-  std::cout << program(it, tokenList) << "\n";
+  Parser* parser = new Parser(tokenList);
+  std::cout << parser->program() << "\n";
   return 0;
 }
 

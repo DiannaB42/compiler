@@ -1,7 +1,16 @@
 #include "parser.h"
 
+Parser::Parser(std::list<std::string> tokenList){
+  list=tokenList;
+}
+
+Parser::~Parser(){
+
+}
+
+
 //checks that the character is a digit
-bool digit(char num){
+bool Parser::digit(char num){
   switch(num){
    case '0':
    case '1':
@@ -22,7 +31,7 @@ bool digit(char num){
 
 //nonZeroDigit checks that the character is a 1-9. Currently not used
 //This logic handled by literal()
-bool nonZeroDigit(char num){
+bool Parser::nonZeroDigit(char num){
   switch(num){
    case '1':
    case '2':
@@ -44,7 +53,7 @@ bool nonZeroDigit(char num){
 //checks that the character is a number defined as either a 0 or
 //starting with 1-9 and having a finite number of digits after it
 //returns true if it is and false if not
-bool literal (std::string number){
+bool Parser::literal (std::string number){
   size_t length, index;
   if (number == ""){
     std::cout << "Error: Call to literal with empty string\n";
@@ -87,7 +96,7 @@ bool literal (std::string number){
 
 //checks that the character is a upper or lowercase letter
 //in the alphabet or an _. Returns true if it is. False if not
-bool letter(char let){
+bool Parser::letter(char let){
   switch(let){
     case 'a':
     case 'b':
@@ -153,7 +162,7 @@ bool letter(char let){
 //checks that the string starts with a letter and contains
 //letters and numbers only. Returns false if it does not and
 //true if it does
-bool identifier(std::string id){
+bool Parser::identifier(std::string id){
   size_t index = 0, length = id.length();
   if(length > 0){
     if(letter(id[0]) == false){
@@ -177,7 +186,7 @@ bool identifier(std::string id){
 }
 
 //factor checks that the string is a correct factor expression
-bool factor(std::list<std::string>::iterator& fact, std::list<std::string>& list){
+bool Parser::factor(std::list<std::string>::iterator& fact, node* loc){
   std::string temp, lex;
   if(fact == list.end()){
     std::cout << "Error: Sent empty list to factor\n";
@@ -205,7 +214,7 @@ bool factor(std::list<std::string>::iterator& fact, std::list<std::string>& list
         std::cout << "No value after +/- before hitting )\n";
         return false;
       }
-      if(factor(fact, list) == true){
+      if(factor(fact, loc) == true){
         return true;
       }
       break;
@@ -216,7 +225,7 @@ bool factor(std::list<std::string>::iterator& fact, std::list<std::string>& list
 	std::cout << "Error: No value inside ()\n";
         return false;
       }
-      if(exp(fact,list) == true){
+      if(exp(fact, loc) == true){
         temp =*( fact);
         if( temp[0] == ')'){
 	  if(temp.length() == 1){
@@ -246,6 +255,10 @@ bool factor(std::list<std::string>::iterator& fact, std::list<std::string>& list
       }
       else if (letter(temp[0]) == true){
         if( identifier(temp) == true){
+          if(symbols.find(temp) == symbols.end()){
+            std::cout << "Error: Uninitialized variable " << temp << "\n";
+            return false;
+          } 
 	    if(++fact != list.end()){
 	      std::cout << "Returning from factor fine \n\n";
 	      return true;
@@ -260,7 +273,7 @@ bool factor(std::list<std::string>::iterator& fact, std::list<std::string>& list
 }
 
 
-bool isEnd(std::list<std::string>::iterator it, std::list<std::string>& list){
+bool Parser::isEnd(std::list<std::string>::iterator it){
   it++;
   if(it == list.end())
     return true;
@@ -268,10 +281,10 @@ bool isEnd(std::list<std::string>::iterator it, std::list<std::string>& list){
     return false;
 }
 
-bool term(std::list<std::string>::iterator& trm, std::list<std::string>& list){
+bool Parser::term(std::list<std::string>::iterator& trm, node* loc){
   std::string currentTerm;
   std::cout << "checking term " << *trm << "\n";
-  if(factor(trm, list) == false){
+  if(factor(trm, loc) == false){
     return false;
   }
   std::cout << "Made it back fine \n\n";
@@ -296,7 +309,7 @@ bool term(std::list<std::string>::iterator& trm, std::list<std::string>& list){
           std::cout << "Error: No value after * before hitting )\n";
 	  return false;
         }
-        return term(trm, list);
+        return term(trm, loc);
         break;
       default:
         return true;
@@ -305,10 +318,10 @@ bool term(std::list<std::string>::iterator& trm, std::list<std::string>& list){
 }
 
 
-bool exp(std::list<std::string>::iterator& expr, std::list<std::string>& list){
+bool Parser::exp(std::list<std::string>::iterator& expr, node* loc){
   std::string currentExp;
   bool recur;
-  if(term(expr, list) == false){
+  if(term(expr, loc) == false){
     return false;
   }
   else{
@@ -333,7 +346,7 @@ bool exp(std::list<std::string>::iterator& expr, std::list<std::string>& list){
             std::cout << "Error: no value after +/- before hitting )\n";
             return false;
           }
-          recur = exp(expr,list);
+          recur = exp(expr, loc);
 	  return recur;
           break;
         default:
@@ -344,7 +357,9 @@ bool exp(std::list<std::string>::iterator& expr, std::list<std::string>& list){
   }
 }
 
-bool assignment(std::list<std::string>::iterator& it, std::list<std::string>& list, std::unordered_map<std::string, int>& symbols){
+bool Parser::assignment(std::list<std::string>::iterator& it){
+  //btree expression;
+  node* loc = NULL;
   if(*it == "%"){
     std::cout << "Error: Sent an empty assignment statement\n";
     return false;
@@ -379,7 +394,7 @@ bool assignment(std::list<std::string>::iterator& it, std::list<std::string>& li
     std::cout << "Error: no expression after = \n";
     return false;
   }
-  if(exp(it, list) == false){
+  if(exp(it, loc) == false){
     std::cout << "Error: Invalid expression in assignment statement\n";
     return false;
   }
@@ -397,29 +412,30 @@ bool assignment(std::list<std::string>::iterator& it, std::list<std::string>& li
     std::cout << "Error: Unknown character after ; in " << current << "\n";
     return false;
   }
-  if(insertSymbol(id, value, symbols) == false){
+  if(insertSymbol(id, value) == false){
     std::cout << "Unable to insert symbol " << id <<", " << value << " into symbol table\n";
     return false;
   }
   return true;
 }
 
-bool program(std::list<std::string>::iterator& it, std::list<std::string> list){
+bool Parser::program(){
+  std::list<std::string>::iterator it = list.begin();
   std::unordered_map<std::string, int> symbols;
   //std::list<std::string>::iterator end = list.end();
   while(*it != "%" ){
-    if(assignment(it, list, symbols) == false){
+    if(assignment(it) == false){
       std::cout << "Invalid assignment\n";
       return false;
     }
     std::cout << "iterator points to " << *it << "\n";
     it++;
   }
-  printSymbols(symbols);
+  printSymbols();
   return true;
 }
 
-bool insertSymbol(std::string id, int value, std::unordered_map<std::string,int>& symbols){
+bool Parser::insertSymbol(std::string id, int value){
   bool insert;
   if(symbols.find(id) == symbols.end()){
     symbols.erase(id);
@@ -431,7 +447,7 @@ bool insertSymbol(std::string id, int value, std::unordered_map<std::string,int>
   return insert;
 }
 
-void printSymbols(std::unordered_map<std::string,int> symbols){
+void Parser::printSymbols(){
   for (auto it= symbols.begin(); it != symbols.end(); ++it){
     std::cout << it->first << " = " << it->second << "\n";
   }
